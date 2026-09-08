@@ -86,6 +86,11 @@ git clone https://github.com/sergebulaev/linkedin-skills.git
 cd linkedin-skills
 ```
 
+The clone ships a `.claude/skills/` directory that symlinks all 11 skills, so
+Claude Code auto-discovers them the moment the repo is your working directory.
+No plugin install needed. Use this path wherever `/plugin` is unavailable, such
+as Claude Code on the web.
+
 ### Hermes Agent
 
 Hermes Agent (Nous Research) follows the agentskills.io open standard and loads `skills/*/SKILL.md` directly. Clone the bundle into your Hermes skills folder:
@@ -225,7 +230,19 @@ Then open `.env` and replace the placeholders with your real values.
 pip install requests python-dotenv
 ```
 
-**Step 7.** Test it. Ask Claude Code or Codex:
+**Step 7.** Check the wiring:
+
+```bash
+python3 scripts/check_config.py
+```
+
+It reports each layer as configured, misconfigured, or simply not set up, and
+never prints a secret (credentials show as prefix plus length). Add `--offline`
+to skip the live API calls. The two silent failures it exists to catch: a `.env`
+that is never read because `python-dotenv` is missing, and a `PUBLORA_API_KEY`
+set without `LINKEDIN_PLATFORM_ID`, which quietly leaves you in draft-only mode.
+
+**Step 8.** Test it end to end. Ask Claude Code or Codex:
 
 > "Schedule a test LinkedIn post via Publora 24 hours from now: 'testing the API connection — will cancel in dashboard'."
 
@@ -252,8 +269,14 @@ Every skill follows these rules automatically:
 
 ## Troubleshooting
 
+Run `python3 scripts/check_config.py` first: it identifies most of the problems
+below by name, without printing your credentials.
+
 | Problem | Fix |
 |---|---|
+| I set up `.env` but nothing uses it | `python-dotenv` is not installed, so `.env` is silently ignored. `pip install python-dotenv`, or export the variables in your shell instead. |
+| Still draft-only despite a valid Publora key | Publishing needs `PUBLORA_API_KEY` **and** `LINKEDIN_PLATFORM_ID`. With only one set, the manual backend is selected with no warning. |
+| Skills keep asking me to paste post text | `APIFY_TOKEN` is unset, expired, or typo'd. Auth failures collapse into the same paste-fallback path as no token, so a wrong token looks exactly like none. |
 | Skills don't activate when I ask about LinkedIn | Make sure you installed via the Skills panel, `/plugin install`, or `codex plugin add`. Try starting a new conversation. |
 | "Publora API key not provided" | Your `.env` file is missing or in the wrong folder. It should be in the `linkedin-skills/` root. |
 | "401 Unauthorized" from Publora | Your API key expired. Go to Publora Settings > API > Create a new key. |
@@ -276,6 +299,7 @@ Every skill follows these rules automatically:
 ```
 linkedin-skills/
 ├── skills/          ← SKILL.md frontmatter; native to Claude Code and Codex, others read as markdown
+├── .claude/skills/  ← symlinks into skills/, so Claude Code auto-discovers the bundle from a plain clone
 ├── .codex-marketplace/ ← generated nested Codex package (run scripts/sync_codex_marketplace.py)
 ├── lib/             ← pure Python, works in any agent runtime
 ├── references/      ← pure markdown, works anywhere
@@ -284,7 +308,7 @@ linkedin-skills/
 
 | Runtime | Auto-discovers skills? | Setup |
 |---|---|---|
-| **Claude Code** (CLI, Desktop, Web, IDE) | Yes | Install via plugin or clone. Skills activate on matching prompts. |
+| **Claude Code** (CLI, Desktop, Web, IDE) | Yes | Install via plugin, or clone and open as the working directory (`.claude/skills/` makes the bundle discoverable without a plugin install). Skills activate on matching prompts. |
 | **Codex CLI** | Yes | Install via `codex plugin marketplace add sergebulaev/linkedin-skills` and `codex plugin add linkedin-skills@linkedin-skills`. |
 | **Anthropic Managed Agents** (`/v1/agents`) | Yes | Pass skill files in the agent context. |
 | **OpenClaw** | Manual | Mount the repo, add system prompt pointing to `skills/*/SKILL.md`. |

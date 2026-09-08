@@ -56,8 +56,13 @@ otherwise.
   version bump and requires updating: `.codex-plugin/plugin.json`,
   `.agents/plugins/marketplace.json`, `.claude-plugin/plugin.json`,
   `.claude-plugin/marketplace.json`, root `SKILL.md` bundle list,
-  README skill table, every
+  README skill table, the `.claude/skills/<name>` symlink, every
   `linkedin-<name>` cross-reference in sibling SKILL.md files.
+- **`.claude/skills/` is a symlink mirror, never a copy.** One relative
+  symlink per skill (`.claude/skills/<name>` -> `../../skills/<name>`) so
+  Claude Code auto-discovers the bundle from a plain clone, with no plugin
+  install. `skills/` stays the single source of truth. Adding or renaming a
+  skill means adding or renaming its symlink in the same commit.
 
 ## Voice rules + reference layout
 
@@ -144,6 +149,9 @@ python3 -c "from lib import publish, fetch_post, illustrate, refine, ApifyClient
 python3 scripts/sync_codex_marketplace.py
 wc -l SKILL.md skills/*/SKILL.md
 ls skills/ | wc -l        # must equal 11
+ls .claude/skills | wc -l # must equal 11
+for l in .claude/skills/*; do [ -e "$l" ] || echo "BROKEN SYMLINK: $l"; done
+python3 scripts/check_config.py --offline   # credential wiring; 0 when nothing is misconfigured
 grep -nE '^description:' skills/*/SKILL.md SKILL.md | grep -E '—|–'   # must be empty
 ```
 
