@@ -37,14 +37,17 @@ cd linkedin-skills
 codex plugin marketplace add .
 codex plugin add linkedin-skills@linkedin-skills
 ```
-
 ### claude.ai (web)
 
-1. Open https://claude.ai/code
-2. Go to **Skills** in the sidebar
-3. Click **Add from GitHub**
-4. Paste: `sergebulaev/linkedin-skills`
-5. Done. The skills activate automatically when you ask about LinkedIn.
+1. Open [claude.ai](https://claude.ai) and click **Customize** in the sidebar
+2. Click **Plugins** (right next to Skills, Connectors)
+3. Click the **Add** button (top-right spot)
+4. Look for **Add marketplace** → **Add from a repository**
+5. Paste `sergebulaev/linkedin-skills` there and sync
+6. Find the plugin under **Discover**, then click **Add**
+7. Done. The skills activate automatically when you ask about LinkedIn.
+
+> Note: Skills/Plugins require a paid Claude plan (Pro, Max, Team, or Enterprise) with code execution enabled.
 
 ### Claude Desktop (Mac / Windows)
 
